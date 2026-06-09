@@ -1,44 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
+import type { AppDispatch } from '../store/store';
 
 const API = 'https://to-dos-api.softclub.tj/api/to-dos';
-
-export const getTodos = createAsyncThunk('todos/getTodos', async () => {
-  try {
-    const response = await axios.get(API);
-    return response.data.data || [];
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-});
-
-export const addTodo = createAsyncThunk('todos/addTodo', async (formData: FormData, { dispatch }) => {
-  try {
-    await axios.post(API, formData);
-    dispatch(getTodos()); 
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-export const deleteTodo = createAsyncThunk('todos/deleteTodo', async (id: number, { dispatch }) => {
-  try {
-    await axios.delete(`${API}?id=${id}`);
-    dispatch(getTodos()); 
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-export const updateTodo = createAsyncThunk('todos/updateTodo', async (data: { id: number, name: string, description: string }, { dispatch }) => {
-  try {
-    await axios.put(API, data);
-    dispatch(getTodos());
-  } catch (error) {
-    console.error(error);
-  }
-});
 
 const todoSlice = createSlice({
   name: 'todos',
@@ -46,17 +10,54 @@ const todoSlice = createSlice({
     data: [],
     loading: false,
   },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(getTodos.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getTodos.fulfilled, (state, action) => {
-        state.data = action.payload;
-        state.loading = false;
-      });
+  reducers: {
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
+    setTodos: (state, action) => {
+      state.data = action.payload;
+    },
   },
 });
 
+export const { setLoading, setTodos } = todoSlice.actions;
 export default todoSlice.reducer;
+
+export const getTodos = () => async (dispatch: AppDispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axios.get(API);
+    dispatch(setTodos(data.data || []));
+  } catch (error) {
+    console.error(error);
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const addTodo = (formData: FormData) => async (dispatch: AppDispatch) => {
+  try {
+    await axios.post(API, formData);
+    dispatch(getTodos());
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const deleteTodo = (id: number) => async (dispatch: AppDispatch) => {
+  try {
+    await axios.delete(`${API}?id=${id}`);
+    dispatch(getTodos());
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const updateTodo = (user: { id: number; name: string; description: string }) => async (dispatch: AppDispatch) => {
+  try {
+    await axios.put(API, user);
+    dispatch(getTodos());
+  } catch (error) {
+    console.error(error);
+  }
+};
