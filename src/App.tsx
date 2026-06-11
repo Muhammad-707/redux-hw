@@ -1,7 +1,8 @@
 import React from 'react'
+import Jotai from './components/Jotai'
 
 export default function App() {
   return (
-    <div>App</div>
+    <div><Jotai/></div>
   )
 }
