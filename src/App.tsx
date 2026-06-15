@@ -1,8 +1,11 @@
 import React from 'react'
-import Jotai from './components/Jotai'
+import Todo from './components/Todo'
+import Todo2 from './components/Todo2'
 
 export default function App() {
   return (
-    <div><Jotai/></div>
+    <div>
+      <Todo/>
+    </div>
   )
 }
