@@ -3,10 +3,16 @@ import axios from 'axios'
 
 const api = "https://to-dos-api.softclub.tj/api/to-dos"
 
+export interface IImage {
+  id: number
+  imageName: string
+}
+
 export interface IData {
   id: number
   name: string
-  job: string
+  description: string
+  images: IImage[]
 }
 
 export interface TodoState {
@@ -26,7 +32,6 @@ export const getData = createAsyncThunk("todos/getData", async () => {
         const { data } = await axios.get(api)
         return data.data
     } catch (error) {
-        console.error(error)
         throw error
     }
 })
@@ -37,7 +42,24 @@ export const deleteData = createAsyncThunk("todos/deleteData", async (id: number
         dispatch(getData())
         return data.errors
     } catch (error) {
-        console.error(error)
+        throw error
+    }
+})
+
+export const addData = createAsyncThunk("todos/addData", async (formData: FormData, { dispatch }) => {
+    try {
+        await axios.post(api, formData)
+        dispatch(getData())
+    } catch (error) {
+        throw error
+    }
+})
+
+export const editData = createAsyncThunk("todos/editData", async (data: { id: number, name: string, description: string }, { dispatch }) => {
+    try {
+        await axios.put(api, data)
+        dispatch(getData())
+    } catch (error) {
         throw error
     }
 })
@@ -61,7 +83,7 @@ export const TodoSlice = createSlice({
         state.isError = true
     })
     builder.addCase(deleteData.fulfilled, (state) => {
-        state.isError = true
+        state.isError = false
     })
   }
 })
