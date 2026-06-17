@@ -6,7 +6,7 @@ const api = "https://to-dos-api.softclub.tj/api/to-dos";
 
 export const getDataAtom = atomWithRefresh(async () => {
     try {
-        let { data } = await axios.get(api);
+        const { data } = await axios.get(api);
         return data.data;
     } catch (error) {
         console.error(error);
@@ -14,32 +14,25 @@ export const getDataAtom = atomWithRefresh(async () => {
     }
 });
 
-export const addDataAtom = atom(null, async (get, set, newTodo: { name: string; description: string; image: File | null }) => {
+export const addDataAtom = atom(null, async (get, set, todo: any) => {
     try {
-        const formData = new FormData();
-        formData.append("Name", newTodo.name);
-        formData.append("Description", newTodo.description);
-        
-        if (newTodo.image) {
-            formData.append("Images", newTodo.image);
-        } else {
-            formData.append("Images", new Blob([]), "default.png");
-        }
-
-        await axios.post(api, formData, {
-            headers: { "Content-Type": "multipart/form-data" }
+        await axios.post(api, {
+            Name: todo.name,
+            Description: todo.description,
+            Images: todo.image || new Blob([])
+        }, { 
+            headers: { "Content-Type": "multipart/form-data" } 
         });
+        
         set(getDataAtom);
     } catch (error) {
         console.error(error);
     }
 });
 
-export const editDataAtom = atom(null, async (get, set, updatedTodo: { id: number; name: string; description: string }) => {
+export const editDataAtom = atom(null, async (get, set, todo: any) => {
     try {
-        await axios.put(api, updatedTodo, {
-            headers: { "Content-Type": "application/json" }
-        });
+        await axios.put(api, todo);
         set(getDataAtom);
     } catch (error) {
         console.error(error);
@@ -52,7 +45,7 @@ export const deleteDataAtom = atom(null, async (get, set, id: number) => {
         set(getDataAtom);
     } catch (error) {
         console.error(error);
-    }   
+    }
 });
 
 export const getLoadableAtom = loadable(getDataAtom);
